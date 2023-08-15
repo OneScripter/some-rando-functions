@@ -66,9 +66,18 @@ foreach ($file in $files)
 	}
 	
 	Write-Log "Compressing $($file.FullName)..."
-	Compress-Archive -Path $file.FullName -DestinationPath $zipFilePath -CompressionLevel Optimal
 	
-	$successCount++
+	try
+	{
+		Compress-Archive -Path $file.FullName -DestinationPath $zipFilePath -CompressionLevel Optimal -ErrorAction Stop	
+		$successCount++
+	}
+	catch
+	{
+		$result = "Error compressing '$($file.FullName)'. Reason: $($PSItem.Exception.Message)"
+		Write-Log $result
+		continue
+	}
 	
 	$zipFile = Get-Item $zipFilePath
 	
@@ -89,6 +98,7 @@ foreach ($file in $files)
 		catch
 		{
 			$result = "Error deleting '$($file.FullName)'. Reason: $($PSItem.Exception.Message)"
+			Write-Log $result
 		}
 	}
 }
